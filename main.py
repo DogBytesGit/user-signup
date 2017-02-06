@@ -26,18 +26,18 @@ page_header = """
     <title>User_Signup</title>
     <style type="text/css">
         .container {
-            width: 300px;
+            width: 600px;
             clear: both;
             }
         .container input {
-            width: 100%;
+            width: 25%;
             clear: both;
             }
     </style>
 </head>
 <body>
     <div class="container">
-    <form>"""
+    <form method='post'>"""
 
 #html footer
 page_footer = """
@@ -59,9 +59,10 @@ error4 = ""
 
 line1 = """<label>Username:</label><input type="text" name="username"/>""" + error1 + """<br> <br>"""
 line2 = """<label>Password:</label><input type="password" name="password"/>""" + error2 + """<br> <br>"""
-line3 = """<label>Verify Password:</label><input type="password" name="verify"/>""" +error3 + """<br> <br>"""
+line3 = """<label>Verify Password:</label><input type="password" name="verify"/>""" + error3 + """<br> <br>"""
 line4 = """<label>Email Address (optional):</label><input type="text" name="email" "/>""" + error4 + """<br> <br>"""
-line5 = '<button style="height:40px;width:100px"><input type="submit" name="Submit" value="Submit"></button>'
+#line5 = '<button style="height:40px;width:100px"><input type="submit" value="Submit"></button>'
+line5 = '<input type="submit" value="Submit">'
 
 def valid_username(username):
     return USER_RE.match(username)
@@ -76,62 +77,11 @@ class MainHandler(webapp2.RequestHandler):
     def get(self):
         body = heading + line1 + line2 + line3 + line4 + line5
         content = page_header + body + page_footer
-
-        # if we have an error, make a <p> to display it
-        #error = self.request.get("error")
-        #error_element = "<p class='error'>" + error + "</p>" if error else ""
         self.response.write(content)
 
-
     def post(self):
-        username = self.request.get("username")
-        #username error messages here
-        if username == "":
-            error1 = " Nothing entered!"
-            line1 = """<label>Username:</label><input type="text" name="username"/>""" + error1 + """<br> <br>"""
-            body = heading + line1 + line2 + line3 + line4 + line5
-            content = page_header + body + page_footer
-            self.response.write(content)
-
-        if ' ' in username:
-            error1 = " Spaces aren't allowed!"
-            line1 = """<label>Username:</label><input type="text" name="username"/>""" + error1 + """<br> <br>"""
-            body = heading + line1 + line2 + line3 + line4 + line5
-            content = page_header + body + page_footer
-            self.response.write(content)
-
-        if USER_RE.match(username):
-            error1 = " Illegal characters in username!"
-            line1 = """<label>Username:</label><input type="text" name="username"/>""" + error1 + """<br> <br>"""
-            body = heading + line1 + line2 + line3 + line4 + line5
-            content = page_header + body + page_footer
-            self.response.write(content)
-
-        #password error messages here
-        if PASSWORD_RE.match(password):
-            error2 = " Illegal characters in password!"
-            line2 = """<label>Password:</label><input type="password" name="password"/>""" + error2 + """<br> <br>"""
-            body = heading + line1 + line2 + line3 + line4 + line5
-            content = page_header + body + page_footer
-            self.response.write(content)
-
-        #passwords don't match error messages here
-        if password != verify:
-            error3 = " Passwords don't match!"
-            line3 = """<label>Verify Password:</label><input type="password" name="verify"/>""" +error3 + """<br> <br>"""
-            body = heading + line1 + line2 + line3 + line4 + line5
-            content = page_header + body + page_footer
-            self.response.write(content)
-
-        #email error messages here
-        if EMAIL_RE.match(email):
-            error4 = " Error in email address!"
-            line4 = """<label>Email Address (optional):</label><input type="text" name="email" "/>""" + error4 + """<br> <br>"""
-            body = heading + line1 + line2 + line3 + line4 + line5
-            content = page_header + body + page_footer
-            self.response.write(content)
-
         #Escape html on inputs
+        username = self.request.get("username")
         username = cgi.escape(username)
         password = self.request.get("password")
         password = cgi.escape(password)
@@ -139,8 +89,41 @@ class MainHandler(webapp2.RequestHandler):
         verify = cgi.escape(verify)
         email = self.request.get("email")
         email = cgi.escape(email)
+        error1 = ""
+        error2 = ""
+        error3 = ""
+        error4 = ""
+        #username error
+        flag = False
+        if (username == "") or not (USER_RE.match(username)):
+            error1 = " That's not a valid username."
+            flag = True
 
+        #password error
+        if not PASSWORD_RE.match(password):
+            error2 = " That wasn't a valid password."
+            flag = True
 
+        #passwords don't match
+        if password != verify:
+            error3 = " Your passwords didn't match!"
+            flag = True
+
+        #email error
+        if not EMAIL_RE.match(email):
+            error4 = " That's not a valid email!"
+            flag = True
+
+        if flag == True:
+            line1 = """<label>Username:</label><input type="text" name="username"/>""" + error1 + """<br> <br>"""
+            line2 = """<label>Password:</label><input type="password" name="password" value=""/>""" + error2 + """<br> <br>"""
+            line3 = """<label>Verify Password:</label><input type="password" name="verify" value=""/>""" + error3 + """<br> <br>"""
+            line4 = """<label>Email Address (optional):</label><input type="text" name="email" "/>""" + error4 + """<br> <br>"""
+            body = heading + line1 + line2 + line3 + line4 + line5
+            content = page_header + body + page_footer
+            self.response.write(content)
+        else:
+            self.response.write("Welcome: " + username)
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
