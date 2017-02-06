@@ -110,15 +110,16 @@ class MainHandler(webapp2.RequestHandler):
             flag = True
 
         #email error
-        if not EMAIL_RE.match(email):
-            error4 = " That's not a valid email!"
-            flag = True
+        if len(email) > 0:
+            if not EMAIL_RE.match(email):
+                error4 = " That's not a valid email!"
+                flag = True
 
         if flag == True:
-            line1 = """<label>Username:</label><input type="text" name="username"/>""" + error1 + """<br> <br>"""
+            line1 = '<label>Username:</label><input type="text" name="username" value="' + username + '" />' + error1 + """<br> <br>"""
             line2 = """<label>Password:</label><input type="password" name="password" value=""/>""" + error2 + """<br> <br>"""
             line3 = """<label>Verify Password:</label><input type="password" name="verify" value=""/>""" + error3 + """<br> <br>"""
-            line4 = """<label>Email Address (optional):</label><input type="text" name="email" "/>""" + error4 + """<br> <br>"""
+            line4 = '<label>Email Address (optional):</label><input type="text" name="email" value="' + email + '" />' + error4 + """<br> <br>"""
             body = heading + line1 + line2 + line3 + line4 + line5
             content = page_header + body + page_footer
             self.response.write(content)
