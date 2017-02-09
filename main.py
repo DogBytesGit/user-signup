@@ -183,7 +183,7 @@ class MainHandler(webapp2.RequestHandler):
             self.response.write(content)
         else:
             flag = False
-            self.response.write("Welcome: " + username)
+            self.response.write("<strong><h1>Welcome: " + username + "</h1></strong>")
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler)
