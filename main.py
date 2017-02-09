@@ -17,52 +17,107 @@
 import webapp2
 import cgi
 import re
-
-#html header
+    
 page_header = """
 <!DOCTYPE html>
 <html>
-<head>
-    <title>User_Signup</title>
-    <style type="text/css">
-        .container {
-            width: 600px;
-            clear: both;
+    <head>
+        <title>User_Signup</title>
+        <style type="text/css">
+            .error {
+                color: red;
             }
-        .container input {
-            width: 25%;
-            clear: both;
+            td{
+            font-family:Arial, sans-serif; font-size:14px;
             }
-    </style>
-</head>
-<body>
-    <div class="container">
-    <form method='post'>"""
-
-#html footer
-page_footer = """
-</form>
-</div>
-</body>
-</html>"""
+            label{
+            font-weight:bold;
+            }
+        </style>
+    </head>
+    <body>"""
 
 heading = '<strong><h1>Signup</h1></strong>'
+username = ''
+username_error = ''
+password = ''
+password_error = ''
+verify = ''
+verify_error = ''
+email = ''
+email_error = ''
+
+def build_page(username, username_error, password, password_error, verify, verify_error, email, email_error):
+    page_body = """
+        <form method='post'>""" + heading + """
+            <table>
+                <tbody>
+                    <tr>
+                        <td align="right">
+                            <label>Username:</label>
+                        </td>
+                        <td>
+                            <input type="text" name="username" value=""" + username + """>
+                        </td>
+                        <td>
+                            <span class="error">""" + username_error + """
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">
+                            <label>Password:</label>
+                        </td>
+                        <td>
+                            <input type="password" name="password" value=""" + password + """>
+                        </td>
+                        <td>
+                            <span class="error">""" + password_error + """
+                            </span>
+                        </td>
+                    </tr>   
+                    <tr>
+                        <td align="right">
+                            <label>Verify:</label>
+                        </td>
+                        <td>
+                            <input type="password" name="verify" value=""" + verify + """>
+                        </td>
+                        <td>
+                            <span class="error">""" + verify_error + """
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right">
+                            <label>Email (optional):</label>
+                        </td>
+                        <td>
+                            <input type="text" name="email" value=""" + email + """>
+                        </td>
+                        <td>
+                            <span class="error">""" + email_error + """
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                        </td>
+                        <td align="right">
+                            <input type="submit" value="Submit">                    
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </form>
+        </body>
+    </html>"""
+    return page_body
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 PASSWORD_RE = re.compile(r"^.{3,20}$")
 EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
-
-error1 = ""
-error2 = ""
-error3 = ""
-error4 = ""
-
-line1 = """<label>Username:</label><input type="text" name="username"/>""" + error1 + """<br> <br>"""
-line2 = """<label>Password:</label><input type="password" name="password"/>""" + error2 + """<br> <br>"""
-line3 = """<label>Verify Password:</label><input type="password" name="verify"/>""" + error3 + """<br> <br>"""
-line4 = """<label>Email Address (optional):</label><input type="text" name="email" "/>""" + error4 + """<br> <br>"""
-#line5 = '<button style="height:40px;width:100px"><input type="submit" value="Submit"></button>'
-line5 = '<input type="submit" value="Submit">'
 
 def valid_username(username):
     return USER_RE.match(username)
@@ -75,8 +130,8 @@ def valid_email(email):
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
-        body = heading + line1 + line2 + line3 + line4 + line5
-        content = page_header + body + page_footer
+        page_body = build_page(username,username_error,password,password_error,verify,verify_error,email,email_error)
+        content = page_header + page_body
         self.response.write(content)
 
     def post(self):
@@ -89,41 +144,45 @@ class MainHandler(webapp2.RequestHandler):
         verify = cgi.escape(verify)
         email = self.request.get("email")
         email = cgi.escape(email)
-        error1 = ""
-        error2 = ""
-        error3 = ""
-        error4 = ""
+
         #username error
         flag = False
         if (username == "") or not (USER_RE.match(username)):
-            error1 = " That's not a valid username."
+            username_error = " That's not a valid username."
             flag = True
+        else:
+            username_error = ""
 
         #password error
         if not PASSWORD_RE.match(password):
-            error2 = " That wasn't a valid password."
+            password_error = " That wasn't a valid password."
             flag = True
+        else:
+            password_error = ""
 
         #passwords don't match
         if password != verify:
-            error3 = " Your passwords didn't match!"
+            verify_error = " Your passwords didn't match!"
             flag = True
+        else:
+            verify_error = ""
 
         #email error
         if len(email) > 0:
             if not EMAIL_RE.match(email):
-                error4 = " That's not a valid email!"
+                email_error = " That's not a valid email!"
                 flag = True
+            else:
+                email_error = ""
+        else:
+            email_error = ""
 
         if flag == True:
-            line1 = '<label>Username:</label><input type="text" name="username" value="' + username + '" />' + error1 + """<br> <br>"""
-            line2 = """<label>Password:</label><input type="password" name="password" value=""/>""" + error2 + """<br> <br>"""
-            line3 = """<label>Verify Password:</label><input type="password" name="verify" value=""/>""" + error3 + """<br> <br>"""
-            line4 = '<label>Email Address (optional):</label><input type="text" name="email" value="' + email + '" />' + error4 + """<br> <br>"""
-            body = heading + line1 + line2 + line3 + line4 + line5
-            content = page_header + body + page_footer
+            page_body = build_page(username,username_error,"",password_error,"",verify_error,email,email_error)            
+            content = page_header + page_body
             self.response.write(content)
         else:
+            flag = False
             self.response.write("Welcome: " + username)
 
 app = webapp2.WSGIApplication([
